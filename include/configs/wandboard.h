@@ -121,6 +121,9 @@
 				"mmc write ${loadaddr} 0x2 ${fw_sz}; " \
 			"fi; "	\
 		"fi\0" \
+	"enable_uEnv=yes\0" \
+	"videoargs=" \
+		"setenv bootargs ${bootargs} ${displayinfo};\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
 		"root=${mmcroot}; run videoargs\0" \
 	"loadbootscript=" \
@@ -167,12 +170,7 @@
 			"echo WARNING: Could not determine dtb to use; fi; \0" \
 
 #define CONFIG_BOOTCOMMAND \
-	   "run findfdt; " \
 	   "mmc dev ${mmcdev}; if mmc rescan; then " \
-		   "if run loadbootenv; then " \
-			   "echo Loaded environment from ${bootenv};" \
-			   "run importbootenv;" \
-		   "fi;" \
 		   "if test -n $uenvcmd; then " \
 			   "echo Running uenvcmd ...;" \
 			   "run uenvcmd;" \
@@ -206,5 +204,18 @@
 #define CONFIG_ENV_IS_IN_MMC
 #define CONFIG_ENV_OFFSET		(6 * 64 * 1024)
 #define CONFIG_SYS_MMC_ENV_DEV		0
+
+
+#define CONFIG_PREBOOT \
+	"mmc dev ${mmcdev}; if mmc rescan; then " \
+		"if test ${enable_uEnv} = yes; then " \
+			"if run loadbootenv; then " \
+				"echo Loaded environment from ${bootenv};" \
+				"run importbootenv;" \
+			"fi;" \
+		"fi;" \
+	"fi;" \
+	"run findfdt; " \
+	"run mmcargs; " \
 
 #endif			       /* __CONFIG_H * */
